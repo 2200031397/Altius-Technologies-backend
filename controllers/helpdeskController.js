@@ -2,13 +2,18 @@ const Ticket = require('../models/ticket');
 
 const createTicket = async (req, res) => {
   try {
-    const { title } = req.body;
-    const customerName = req.user.role; // Assuming the user info is stored in the token payload
+    const { title, noteContent } = req.body; // Accept note content if provided
+    const customerName = req.user.name; // Assuming `name` field is in the token payload
+    const customerRole = req.user.role; // Assuming `role` is in the token payload
 
     const newTicket = new Ticket({
       title,
-      customerName, // You can also add customerId to associate the ticket with the user
-      lastUpdatedOn: Date.now()
+      customerName, // Storing the customer's name separately
+      customerRole, // Storing the customer's role separately
+      lastUpdatedOn: Date.now(),
+      notes: noteContent
+        ? [{ content: noteContent, addedBy: customerName }] // Add note if provided
+        : []
     });
 
     await newTicket.save();
@@ -18,6 +23,8 @@ const createTicket = async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 };
+
+
 
 
 const getAllTickets = async (req, res) => {
@@ -55,4 +62,44 @@ const deleteTicket = async (req, res) => {
   }
 };
 
-module.exports = { createTicket, getAllTickets, updateTicket, deleteTicket };
+
+const getCustomerTickets = async (req, res) => {
+  try {
+    const customerName = req.user.name; // Assuming `name` is stored in the token payload
+    const tickets = await Ticket.find({ customerName }).sort({ lastUpdatedOn: -1 });
+    res.status(200).send(tickets);
+  } catch (error) {
+    console.error('Error fetching customer tickets:', error);
+    res.status(500).send({ error: error.message });
+  }
+};
+
+const addNoteToTicket = async (req, res) => {
+  try {
+    const ticketId = req.params.id; // Get the ticketId from the URL
+    const { content } = req.body;  // Get the note content from the request body
+    const addedBy = req.user.name; // Assuming the customer's name is in the token payload
+    const customerRole=req.user.role
+    // Find the ticket by its ID
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+      return res.status(404).send({ error: 'Ticket not found' });
+    }
+
+    // Add the new note to the ticket's notes array
+    ticket.notes.push({ content, addedBy,customerRole, timestamp: Date.now() });
+
+    // Update the lastUpdatedOn timestamp
+    ticket.lastUpdatedOn = Date.now();
+
+    // Save the updated ticket
+    await ticket.save();
+
+    res.status(200).send({ message: 'Note added successfully', notes: ticket.notes });
+  } catch (error) {
+    console.error('Error adding note:', error);
+    res.status(500).send({ error: error.message });
+  }
+};
+
+module.exports = { createTicket, getAllTickets, updateTicket, deleteTicket, getCustomerTickets, addNoteToTicket };

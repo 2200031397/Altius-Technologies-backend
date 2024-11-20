@@ -14,5 +14,7 @@ router.get('/tickets', authenticateToken, authorizeRoles('Agent', 'Admin'), help
 router.put('/tickets/:id', authenticateToken, authorizeRoles('Agent', 'Admin'), helpdeskController.updateTicket);
 router.delete('/tickets/:id', authenticateToken, authorizeRoles('Admin'), helpdeskController.deleteTicket);
 router.get('/customers',authenticateToken, authorizeRoles('Admin'), authController.getCustomers);
+router.get('/tickets/my-tickets', authenticateToken, authorizeRoles('Customer'), helpdeskController.getCustomerTickets);
+router.post('/tickets/:id/add-note', authenticateToken, helpdeskController.addNoteToTicket);
 
 module.exports = router;

@@ -10,13 +10,11 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB Connection URL (hardcoded for demonstration purposes)
-const dburl = 'mongodb+srv://charanchowdarynunnam:qQUNLIAndusn0mnY@cluster0.xn9jw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const dburl = 'mongodb+srv://charanchowdarynunnam:KzULXYPA8UqWl4R4@seequenze.ngp9l.mongodb.net/?retryWrites=true&w=majority&appName=Seequenze';
 
 // Connect to MongoDB
 mongoose.connect(dburl, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 30000,
+ 
 })
   .then(() => console.log('Connected to MongoDB successfully'))
   .catch(err => console.error('DB Connection Error:', err));
