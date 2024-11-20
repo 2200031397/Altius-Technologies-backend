@@ -2,17 +2,17 @@ const Ticket = require('../models/ticket');
 
 const createTicket = async (req, res) => {
   try {
-    const { title, noteContent } = req.body; // Accept note content if provided
-    const customerName = req.user.name; // Assuming `name` field is in the token payload
-    const customerRole = req.user.role; // Assuming `role` is in the token payload
+    const { title, noteContent } = req.body; 
+    const customerName = req.user.name; 
+    const customerRole = req.user.role; 
 
     const newTicket = new Ticket({
       title,
-      customerName, // Storing the customer's name separately
-      customerRole, // Storing the customer's role separately
+      customerName, 
+      customerRole, 
       lastUpdatedOn: Date.now(),
       notes: noteContent
-        ? [{ content: noteContent, addedBy: customerName }] // Add note if provided
+        ? [{ content: noteContent, addedBy: customerName }] 
         : []
     });
 
@@ -32,7 +32,7 @@ const getAllTickets = async (req, res) => {
     const tickets = await Ticket.find().sort({ lastUpdatedOn: -1 });
     res.status(200).send(tickets);
   } catch (error) {
-    console.error('Error fetching tickets:', error);  // Check the console for more details
+    console.error('Error fetching tickets:', error);  
     res.status(500).send({ error: error.message });
   }
 };
@@ -65,7 +65,7 @@ const deleteTicket = async (req, res) => {
 
 const getCustomerTickets = async (req, res) => {
   try {
-    const customerName = req.user.name; // Assuming `name` is stored in the token payload
+    const customerName = req.user.name; 
     const tickets = await Ticket.find({ customerName }).sort({ lastUpdatedOn: -1 });
     res.status(200).send(tickets);
   } catch (error) {
@@ -76,23 +76,23 @@ const getCustomerTickets = async (req, res) => {
 
 const addNoteToTicket = async (req, res) => {
   try {
-    const ticketId = req.params.id; // Get the ticketId from the URL
-    const { content } = req.body;  // Get the note content from the request body
-    const addedBy = req.user.name; // Assuming the customer's name is in the token payload
+    const ticketId = req.params.id; 
+    const { content } = req.body;  
+    const addedBy = req.user.name; 
     const customerRole=req.user.role
-    // Find the ticket by its ID
+   
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) {
       return res.status(404).send({ error: 'Ticket not found' });
     }
 
-    // Add the new note to the ticket's notes array
+   
     ticket.notes.push({ content, addedBy,customerRole, timestamp: Date.now() });
 
-    // Update the lastUpdatedOn timestamp
+    
     ticket.lastUpdatedOn = Date.now();
 
-    // Save the updated ticket
+    
     await ticket.save();
 
     res.status(200).send({ message: 'Note added successfully', notes: ticket.notes });
